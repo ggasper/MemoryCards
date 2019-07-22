@@ -10,5 +10,5 @@ class Deck(models.Model):
 
 class Card(models.Model):
     deck = models.ForeignKey(Deck, on_delete=models.CASCADE)
-    card_front = models.TextField()
-    card_back = models.TextField()
+    front = models.TextField()
+    back = models.TextField()

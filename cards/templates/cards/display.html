@@ -1,0 +1,3 @@
+<h2> {{ card.front }}  </h2>
+<p> {{ card.back }} </p>
+<a href="{% url 'cards:display' card.deck_id  next_card %}">next</a>
