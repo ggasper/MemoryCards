@@ -1,0 +1,9 @@
+{% if deck_list %}
+<ul>
+  {% for deck in deck_list %}
+  <li><a href="{% url 'cards:detail' deck.id %}">{{ deck.title }}</a></li>
+  {% endfor %}
+</ul>
+{% else %}
+<p> No decks have been added </p>
+{% endif %}
