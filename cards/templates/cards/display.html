@@ -1,3 +1,5 @@
 <h2> {{ card.front }}  </h2>
 <p> {{ card.back }} </p>
+<a href="{% url 'cards:display' card.deck_id  prev_card %}">previous</a>
+<a href="{% url 'cards:display' card.deck_id  next_card_random %}">random</a>
 <a href="{% url 'cards:display' card.deck_id  next_card %}">next</a>

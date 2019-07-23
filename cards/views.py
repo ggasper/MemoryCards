@@ -29,11 +29,25 @@ def display(request, card_id):
     return render(request, 'cards/display.html', {'card': card, 'next_id': next_card_id})"""
 
 # Display a random card belonging to deck
-def display(request, deck_id, card_id):
+def display(request, deck_id, page_num):
     deck = get_object_or_404(Deck, pk=deck_id)
+    cards = deck.card_set.all().order_by('id')
+
+    # Convert decks page number to card id
+    def num_to_id(page_num):
+        if 0 < page_num < len(cards) + 1:
+            return cards[page_num - 1].pk
+        else:
+            raise Http404
+
+    card_id = num_to_id(page_num)
     card = get_object_or_404(Card, pk=card_id)
 
     # Select card to show
-    next_card = random.choice(deck.card_set.all()).pk
-
-    return render(request, 'cards/display.html', {'card': card, 'next_card': next_card})
+    next_card = page_num % len(cards) + 1
+    next_card_random = random.choice(cards).pk
+    prev_card = page_num - 1
+    if prev_card <= 0:
+        prev_card = len(cards)
+    
+    return render(request, 'cards/display.html', {'card': card, 'next_card': next_card, 'prev_card': prev_card, 'next_card_random': next_card_random})
