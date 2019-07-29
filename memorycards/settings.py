@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cards.apps.CardsConfig',
     'accounts.apps.AccountsConfig',
+    'guardian'
 ]
 
 MIDDLEWARE = [
@@ -121,7 +122,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-
+LOGIN_URL = 'accounts/login'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # this is default
+    'guardian.backends.ObjectPermissionBackend',
+)
