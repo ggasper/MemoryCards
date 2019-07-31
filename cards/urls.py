@@ -10,4 +10,5 @@ urlpatterns = [
     path('<int:deck_id>/card/<int:page_num>/', views.display, name='display'),
     path('create', views.create_deck_form, name='create'),
     path('edit/<int:deck_id>/<int:card_id>', views.edit_deck, name='edit'),
+    path('review/<int:deck_id>', views.review, name='review')
 ]

@@ -22,3 +22,19 @@ class CardEditForm(forms.Form):
     def init(self, card):
         self.fields['front'].initial = card.front
         self.fields['back'].initial = card.back
+
+# A form for rating retention
+class RetentionForm(forms.Form):
+    OPTIONS = (
+        (5, 'perfect'),
+        (4, 'great'),
+        (3, 'ok'),
+        (2, 'close'),
+        (1, 'wrong'),
+        (0, 'blank')
+    )
+    quality = forms.MultipleChoiceField(choices=OPTIONS, widget=forms.CheckboxSelectMultiple())
+    sm2_data_id = forms.IntegerField(widget=forms.HiddenInput())
+
+    def init(self, sm2_data_id):
+        self.fields['sm2_data_id'].initial = sm2_data_id

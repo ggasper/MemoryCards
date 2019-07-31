@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from guardian.shortcuts import assign_perm
 
@@ -40,3 +41,16 @@ class Card(models.Model):
             self.save()
             return True
         return False
+
+class SM2_data(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    card = models.ForeignKey(Card, on_delete=models.CASCADE)
+
+    last_score = models.PositiveIntegerField(default=5, validators=[MinValueValidator(0), MaxValueValidator(5)])
+    EF = models.FloatField(default=2.5)
+    repetition = models.IntegerField(default=1)
+    repetition_counter = models.IntegerField(default=1)
+    
+    class Meta:
+        unique_together = ('user', 'card',)
+        

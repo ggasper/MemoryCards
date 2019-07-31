@@ -3,8 +3,9 @@ from django.views.generic import ListView
 from django.urls import reverse_lazy
 from django.utils import timezone
 
-from .models import Card, Deck
-from .forms import DeckForm, DeckEditForm, CardEditForm
+from .models import Card, Deck, SM2_data
+from .forms import DeckForm, DeckEditForm, CardEditForm, RetentionForm
+from .sm2 import SM2
 
 import random
 
@@ -80,6 +81,8 @@ def create_deck_form(request):
         form = DeckForm()
     return render(request, 'cards/create_deck_form.html', {'form': form})
 
+
+# Form for editing the deck
 def edit_deck(request, deck_id, card_id):
     deck = get_object_or_404(Deck, pk=deck_id)
     card = get_object_or_404(Card, pk=card_id)
@@ -93,11 +96,75 @@ def edit_deck(request, deck_id, card_id):
 
         deck.update_from_form(deck_form)
         card.update_from_form(card_form)
-        return redirect('/')
+        
+    deck_form = DeckEditForm()
+    deck_form.init(deck)
+    card_form = CardEditForm()
+    card_form.init(card)
+
+    # Find next and previous card
+    n_cards = deck.card_set.filter(pk__gt = card.pk)
+    p_cards = deck.card_set.filter(pk__lt = card.pk).order_by('-pk')
+
+    if len(n_cards) <= 0:
+        n_card = deck.card_set.create(front="", back="")
     else:
-        deck_form = DeckEditForm()
-        deck_form.init(deck)
-        card_form = CardEditForm()
-        card_form.init(card)
-        return render(request, 'cards/edit_deck.html', {'deck_form': deck_form, 'card_form': card_form})
+        n_card = n_cards[0]
+
+    context = {
+        'deck_form': deck_form,
+        'card_form': card_form,
+        'deck': deck,
+        'n_card': n_card
+    }
+        
+    if len(p_cards) > 0:
+        p_card = p_cards[0]
+        context['p_card'] = p_card
+        
+    return render(request, 'cards/edit_deck.html', context)
+
+# Display deck for learning with sm2 algorithm
+def review(request, deck_id):
+    sm2 = SM2(request.user, deck_id)
+
+    # Check if we are starting new repeat
+    if request.method == 'GET' and 'new' in request.GET and request.GET['new']:
+        sm2.start_repeat()
     
+    # If we have some data to update first process that
+    if request.method == 'POST':
+        form = RetentionForm(request.POST)
+        if form.is_valid():
+            quality = int(form.cleaned_data['quality'][0])
+            #print(quality)
+            sm2_data_id = int(form.cleaned_data['sm2_data_id'])
+
+            sm2_data = get_object_or_404(SM2_data, pk=sm2_data_id)
+
+            # The repetition counter equals zero if we got here from inital repetition and something else if we are just repeating bad
+            # attempts.
+            if sm2_data.repetition_counter <= 0:
+                sm2.update_card(sm2_data.card, quality)
+            else:
+                sm2.update_card_bq(sm2_data.card, quality)
+    # Get new card if there is one
+    sm2_card = sm2.get_card()
+
+    # If there is no card that hasn't been reviewed yet choose one from poorly graded ones
+    if not sm2_card:
+        sm2_card = sm2.get_card_bq()
+    # If there is still no card we are done... root is a placeholder
+    if not sm2_card:
+        return redirect('/')
+
+    quality_form = RetentionForm()
+    quality_form.init(sm2_card.pk)
+
+    card = get_object_or_404(Card, pk=sm2_card.card.pk)
+    
+    context = {
+        'card': card,
+        'form': quality_form
+    }
+    return render(request, 'cards/review.html', context)

@@ -4,3 +4,7 @@
   {{ deck_form }}
   <input type="submit" value="Submit">
 </form>
+{% if p_card %}
+<a href="{% url 'cards:edit' deck.pk p_card.pk %}">previous</a>
+{% endif %}
+<a href="{% url 'cards:edit' deck.pk n_card.pk %}">next</a>
