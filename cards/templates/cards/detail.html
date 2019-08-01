@@ -1,3 +1,14 @@
-<h1> {{ deck.title }} </h1>
-<p> Published on: {{ deck.pub_date }} </p>
+{% extends 'base.html' %}
+
+{% block title %} Detail of {{ deck.title }} {% endblock %}
+
+
+{% block content %}
+<h1 class="display-4"> {{ deck.title }} </h1>
+<small> Published on: {{ deck.pub_date }} </small>
 <p> {{ deck.description }} </p>
+<form action="/cards/review/{{ deck.pk }}" method="GET">
+  <input type="hidden" name="new" value="1">
+  <button type="submit" class="btn btn-outline-primary"> Review </button>
+</form>
+{% endblock %}

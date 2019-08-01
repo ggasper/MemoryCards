@@ -1,9 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %} Decks {% endblock %}
+
+
+{% block content %}
 {% if deck_list %}
-<ul>
+<ul class="card-group">
   {% for deck in deck_list %}
-  <li><a href="{% url 'cards:detail' deck.id %}">{{ deck.title }}</a></li>
+  <div class="col-sm-3">
+    <li class="card mt-3 mr-3 bg-light">
+      <div class="card-header">
+	<a href="{% url 'cards:detail' deck.id %}">{{ deck.title }}</a> <br>
+	<small class="text-muted ml-auto"> Created by {{ deck.author.username }} </small>
+      </div>
+      <div class="card-body">
+	<p class="card-text"> {{ deck.description }} </p>
+      </div>
+      <div class="card-footer">
+	<small class="text-muted"> Published: {{ deck.pub_date }} </small>
+      </div>
+    </li>
+  </div>
   {% endfor %}
 </ul>
 {% else %}
 <p> No decks have been added </p>
 {% endif %}
+{% endblock %}

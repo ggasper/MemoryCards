@@ -33,7 +33,7 @@ class RetentionForm(forms.Form):
         (1, 'wrong'),
         (0, 'blank')
     )
-    quality = forms.MultipleChoiceField(choices=OPTIONS, widget=forms.CheckboxSelectMultiple())
+    quality = forms.MultipleChoiceField(choices=OPTIONS, widget=forms.RadioSelect())
     sm2_data_id = forms.IntegerField(widget=forms.HiddenInput())
 
     def init(self, sm2_data_id):

@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cards.apps.CardsConfig',
     'accounts.apps.AccountsConfig',
-    'guardian'
+    'guardian',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -130,3 +131,5 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend', # this is default
     'guardian.backends.ObjectPermissionBackend',
 )
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

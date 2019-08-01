@@ -131,6 +131,7 @@ def review(request, deck_id):
     # Check if we are starting new repeat
     if request.method == 'GET' and 'new' in request.GET and request.GET['new']:
         sm2.start_repeat()
+        return redirect('cards:review', deck_id=deck_id)
     
     # If we have some data to update first process that
     if request.method == 'POST':

@@ -1,5 +1,12 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create deck{% endblock %}
+
+{% block content %}
 <form method="post">
   {% csrf_token %}
-  {{ form }}
-  <input type = "submit" value="Submit">
+  {{ form|crispy }}
+  <input class="btn btn-primary" type="submit" value="Submit">
 </form>
+{% endblock %}
