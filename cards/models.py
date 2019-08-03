@@ -54,3 +54,5 @@ class SM2_data(models.Model):
     class Meta:
         unique_together = ('user', 'card',)
         
+    def needs_review(self):
+        return self.repetition_counter <= 0

@@ -11,4 +11,7 @@
   <input type="hidden" name="new" value="1">
   <button type="submit" class="btn btn-outline-primary"> Review </button>
 </form>
+<form action="/cards/edit/{{ deck.pk }}/{{ edit_card.pk }}">
+  <button type="submit" class="btn btn-outline-primary"> Edit </button>
+</form>
 {% endblock %}

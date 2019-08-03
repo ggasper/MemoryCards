@@ -1,8 +1,30 @@
-<p> {{ card.front }} </p>
-<p> {{ card.back }} </p>
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
-<form method="POST">
-  {% csrf_token %}
-  {{ form }}
-  <input type="submit" value="Submit">
-</form>
+{% block title %} Review {% endblock %}
+
+{% block content %}
+<div class="card mt-3 mb-3">
+  <h4 class="card-header">Card front</h4>
+  <p class="card-body">{{ card.front }}</p>
+</div>
+
+<div class="card">
+  <div class="card-header" id="revealHeading">
+    <h4 class="mb-0">
+      <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#reveal">Reveal card back</button>
+    </h4>
+  </div>
+  <div id="reveal" class="collapse" data-parent="#revealHeading">
+    <div class="card-body">
+      {{ card.back }}
+      <hr>
+      <form method="POST">
+	{% csrf_token %}
+	{{ form|crispy }}
+	<input type="submit" value="Submit">
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

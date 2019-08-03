@@ -1,10 +1,32 @@
+{% extends "base.html" %}
+{% block title %} Edit {{ deck.title }} {% endblock %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
 <form method='POST'>
   {% csrf_token %}
-  {{ card_form }}
-  {{ deck_form }}
-  <input type="submit" value="Submit">
+  {{ card_form|crispy }}
+  {{ deck_form|crispy }}
+  <button class="btn btn-outline-primary" type="submit" value="Save">Save</button>
 </form>
-{% if p_card %}
-<a href="{% url 'cards:edit' deck.pk p_card.pk %}">previous</a>
-{% endif %}
-<a href="{% url 'cards:edit' deck.pk n_card.pk %}">next</a>
+<hr>
+
+<ul class="pagination">
+  <li class="page-item {% if not p_card %} disabled {% endif %}">
+      <a class="page-link" {% if p_card %} href="{% url 'cards:edit' deck.pk p_card.pk %} {% else %} tabindex="-1" {% endif %}">
+        <span>&laquo;</span>
+      </a>
+  </li>
+  
+  {% for page, card in cards_around %}
+  <li class="page-item {% if card.pk == active_card.pk %} active {% endif %}  "><a class="page-link" href="{% url 'cards:edit' deck.pk card.pk %}"> {{ page }}</a></li>
+  {% endfor %}
+  
+  <li class="page-item">
+      <a class="page-link" href="{% url 'cards:edit' deck.pk n_card.pk %}">
+        <span>&raquo;</span>
+      </a>
+  </li>
+</ul>
+{% endblock %}

@@ -3,12 +3,12 @@ from django import forms
 # A form for creating a deck
 class DeckForm(forms.Form):
     title = forms.CharField(label='Title', max_length=100)
-    description = forms.CharField(label='Description')
+    description = forms.CharField(widget=forms.Textarea, label='Description')
 
 # A form for editing a deck
 class DeckEditForm(forms.Form):
     title = forms.CharField(label='Title', max_length=100)
-    description = forms.CharField(label='Description')
+    description = forms.CharField(widget=forms.Textarea, label='Description')
 
     def init(self, deck):
         self.fields['title'].initial = deck.title
@@ -17,7 +17,7 @@ class DeckEditForm(forms.Form):
 # A form for editing a specific card
 class CardEditForm(forms.Form):
     front = forms.CharField(label='Front')
-    back = forms.CharField(label='Back')
+    back = forms.CharField(widget=forms.Textarea, label='Back')
 
     def init(self, card):
         self.fields['front'].initial = card.front
@@ -33,7 +33,7 @@ class RetentionForm(forms.Form):
         (1, 'wrong'),
         (0, 'blank')
     )
-    quality = forms.MultipleChoiceField(choices=OPTIONS, widget=forms.RadioSelect())
+    quality = forms.ChoiceField(choices=OPTIONS, widget=forms.RadioSelect())
     sm2_data_id = forms.IntegerField(widget=forms.HiddenInput())
 
     def init(self, sm2_data_id):

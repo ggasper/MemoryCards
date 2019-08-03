@@ -2,10 +2,12 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 
 from .models import Card, Deck, SM2_data
 from .forms import DeckForm, DeckEditForm, CardEditForm, RetentionForm
 from .sm2 import SM2
+from .deck_manager import DeckManager
 
 import random
 
@@ -19,10 +21,11 @@ def decks(request):
 
 # Display the details of a single deck
 def detail(request, deck_id):
-    deck = get_object_or_404(Deck, pk=deck_id)
-    return render(request, 'cards/detail.html', {'deck': deck})
+    deck_manager = DeckManager(deck_id)
+    edit_card = deck_manager.get_first_card()
+    return render(request, 'cards/detail.html', {'deck': deck_manager.deck, 'edit_card': edit_card})
 
-# Display a card belonging to deck
+# Display a card belonging to deck ---- TODO convert num to id
 def display(request, deck_id, page_num):
     deck = get_object_or_404(Deck, pk=deck_id)
     cards = deck.card_set.all().order_by('id')
@@ -54,77 +57,69 @@ def display(request, deck_id, page_num):
     return render(request, context, 'cards/display.html',)
 
 # Create a new deck
+@login_required
 def create_deck_form(request):
-    # if user is not logged in redirect him to the login page
-    if not request.user.is_authenticated:
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-
     if request.method == 'POST':
         form = DeckForm(request.POST)
-
-        if form.is_valid():
-            title = form.cleaned_data['title']
-            description = form.cleaned_data['description']
-            deck = Deck(title=title, author=request.user, description=description, pub_date=timezone.now())
-            deck.save()
-
-            # Allow the user to edit their own decks
-            deck.allow_edit(request.user)
-
-
-        # Create initial card
-        card = deck.card_set.create(front="", back="")
         
-        # Redirect to deck editing form
-        return redirect('cards:edit', card_id = card.pk, deck_id = deck.pk)
-    else:
-        form = DeckForm()
+        if form.is_valid():
+            return DeckManager.new_deck_from_form(form)
+
+    form = DeckForm()
     return render(request, 'cards/create_deck_form.html', {'form': form})
 
 
 # Form for editing the deck
+@login_required
 def edit_deck(request, deck_id, card_id):
-    deck = get_object_or_404(Deck, pk=deck_id)
-    card = get_object_or_404(Card, pk=card_id)
 
-    if not request.user.has_perm('can_edit', deck):
+    deck_manager = DeckManager(deck_id)
+    
+    # If card_id is 0 then we need to create new card first
+    if card_id == 0:
+        card = deck_manager.new_blank_card(deck_manager.deck)
+        return redirect('cards:edit', deck_id=deck_id, card_id=card.pk)
+    else:
+        card = get_object_or_404(Card, pk=card_id)
+    
+    if not request.user.has_perm('can_edit', deck_manager.deck):
         return redirect('/')
     
     if request.method == 'POST':
         deck_form = DeckEditForm(request.POST)
         card_form = CardEditForm(request.POST)
 
-        deck.update_from_form(deck_form)
+        deck_manager.deck.update_from_form(deck_form)
         card.update_from_form(card_form)
         
     deck_form = DeckEditForm()
-    deck_form.init(deck)
+    deck_form.init(deck_manager.deck)
     card_form = CardEditForm()
     card_form.init(card)
 
     # Find next and previous card
-    n_cards = deck.card_set.filter(pk__gt = card.pk)
-    p_cards = deck.card_set.filter(pk__lt = card.pk).order_by('-pk')
+    n_card = deck_manager.get_next_card(card)
 
-    if len(n_cards) <= 0:
-        n_card = deck.card_set.create(front="", back="")
-    else:
-        n_card = n_cards[0]
-
+    # Find pages to display for quick navigation
+    cards_around = deck_manager.get_cards_around(card)
+    
     context = {
         'deck_form': deck_form,
         'card_form': card_form,
-        'deck': deck,
-        'n_card': n_card
+        'deck': deck_manager.deck,
+        'n_card': n_card,
+        'cards_around': cards_around,
+        'active_card': card
     }
         
-    if len(p_cards) > 0:
-        p_card = p_cards[0]
+    p_card = deck_manager.get_previous_card(card)
+    if p_card:
         context['p_card'] = p_card
         
     return render(request, 'cards/edit_deck.html', context)
 
 # Display deck for learning with sm2 algorithm
+@login_required
 def review(request, deck_id):
     sm2 = SM2(request.user, deck_id)
 
@@ -135,7 +130,9 @@ def review(request, deck_id):
     
     # If we have some data to update first process that
     if request.method == 'POST':
+        
         form = RetentionForm(request.POST)
+        print(form.errors)
         if form.is_valid():
             quality = int(form.cleaned_data['quality'][0])
             #print(quality)
@@ -145,19 +142,19 @@ def review(request, deck_id):
 
             # The repetition counter equals zero if we got here from inital repetition and something else if we are just repeating bad
             # attempts.
-            if sm2_data.repetition_counter <= 0:
+            if sm2_data.needs_review():
                 sm2.update_card(sm2_data.card, quality)
             else:
                 sm2.update_card_bq(sm2_data.card, quality)
     # Get new card if there is one
     sm2_card = sm2.get_card()
 
-    # If there is no card that hasn't been reviewed yet choose one from poorly graded ones
+    # If there is no card that hasn't been reviewed yet, choose one from the poorly graded ones
     if not sm2_card:
         sm2_card = sm2.get_card_bq()
-    # If there is still no card we are done... root is a placeholder
+    # If there is still no card, we are done
     if not sm2_card:
-        return redirect('/')
+        return redirect('cards:end_review', deck_id=deck_id)
 
     quality_form = RetentionForm()
     quality_form.init(sm2_card.pk)
@@ -169,3 +166,10 @@ def review(request, deck_id):
         'form': quality_form
     }
     return render(request, 'cards/review.html', context)
+
+# Display end of review
+@login_required
+def end_review(request, deck_id):
+    deck_manager = DeckManager(deck_id)
+    deck = deck_manager.deck
+    return render(request, 'cards/end_review.html', {'deck':deck})
