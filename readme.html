@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>readme.html</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+
+</head>
+
+<body>
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">CREATE</span> <span class="kw">DATABASE</span> memorycards;</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">CREATE</span> <span class="fu">USER</span> memorycardsuser <span class="kw">WITH</span> <span class="kw">PASSWORD</span> <span class="st">&#39;password&#39;</span>;</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">ALTER</span> <span class="kw">ROLE</span> memorycardsuser <span class="kw">SET</span> client_encoding <span class="kw">TO</span> <span class="st">&#39;utf8&#39;</span>;</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">ALTER</span> <span class="kw">ROLE</span> memorycardsuser <span class="kw">SET</span> timezone <span class="kw">TO</span> <span class="st">&#39;UTC&#39;</span>;</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">ALTER</span> <span class="kw">ROLE</span> memorycardsuser <span class="kw">SET</span> default_transaction_isolation <span class="kw">TO</span> <span class="st">&#39;read committed&#39;</span>;</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="kw">GRANT</span> <span class="kw">all</span> <span class="kw">PRIVILEGES</span> <span class="kw">ON</span> <span class="kw">DATABASE</span> memorycards <span class="kw">TO</span> memorycardsuser;</span></code></pre></div>
+<pre><code>python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver.py</code></pre>
+
+</body>
+</html>
