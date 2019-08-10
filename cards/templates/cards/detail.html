@@ -11,7 +11,10 @@
   <input type="hidden" name="new" value="1">
   <button type="submit" class="btn btn-outline-primary"> Review </button>
 </form>
+<a href="{% url 'cards:display' deck.pk 0 %}" class="btn btn-outline-primary" role="button">View</a>
+{% if can_edit %}
 <form action="/cards/edit/{{ deck.pk }}/{{ edit_card.pk }}">
   <button type="submit" class="btn btn-outline-primary"> Edit </button>
 </form>
+{% endif %}
 {% endblock %}

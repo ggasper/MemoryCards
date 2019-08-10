@@ -1,14 +1,16 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %} Decks {% endblock %}
 
+{% block head %} <link rel="stylesheet" type="text/css" href="{% static 'cards/style.css' %}"> {% endblock %}
 
 {% block content %}
 {% if deck_list %}
 <ul class="card-group">
   {% for deck in deck_list %}
   <div class="col-sm-3">
-    <li class="card mt-3 mr-3 bg-light">
+    <li class="card mt-3 bg-light">
       <div class="card-header">
 	<a href="{% url 'cards:detail' deck.id %}">{{ deck.title }}</a> <br>
 	<small class="text-muted ml-auto"> Created by {{ deck.author.username }} </small>
@@ -17,7 +19,7 @@
 	<p class="card-text"> {{ deck.description }} </p>
       </div>
       <div class="card-footer">
-	<small class="text-muted"> Published: {{ deck.pub_date }} </small>
+	<small class="text-muted"> Published: {{ deck.pub_date | date:'M d, Y' }} </small>
       </div>
     </li>
   </div>

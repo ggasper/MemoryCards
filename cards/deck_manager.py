@@ -1,5 +1,7 @@
 from .models import Deck, Card
 from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
+
 
 class DeckManager:
     @staticmethod
@@ -7,7 +9,7 @@ class DeckManager:
         return deck.card_set.create(front="", back="")
 
     @staticmethod
-    def new_deck_from_form(form):
+    def new_deck_from_form(request, form):
         title = form.cleaned_data['title']
         description = form.cleaned_data['description']
         deck = Deck(title=title, author=request.user, description=description, pub_date=timezone.now())
@@ -16,10 +18,13 @@ class DeckManager:
         # Allow the user to edit their own decks
         deck.allow_edit(request.user)
         
-        card = new_blank_card(deck)
+        card = DeckManager.new_blank_card(deck)
 
         return redirect('cards:edit', card_id=card.pk, deck_id=deck.pk)
 
+    def can_edit(self, user):
+        return self.deck.can_edit(user)
+    
     def deck_from_id(self, deck_id):
         return get_object_or_404(Deck, pk=deck_id)
     

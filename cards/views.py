@@ -19,42 +19,46 @@ def decks(request):
     context = {'deck_list': deck_list}
     return render(request, 'cards/decks.html', context)
 
+# List all deck made by user
+@login_required
+def my_decks(request):
+    deck_list = Deck.objects.filter(author=request.user).order_by('-pub_date')
+    context = {'deck_list': deck_list}
+    return render(request, 'cards/decks.html', context)
+
+
 # Display the details of a single deck
 def detail(request, deck_id):
     deck_manager = DeckManager(deck_id)
     edit_card = deck_manager.get_first_card()
-    return render(request, 'cards/detail.html', {'deck': deck_manager.deck, 'edit_card': edit_card})
+    return render(request, 'cards/detail.html', {'deck': deck_manager.deck, 'edit_card': edit_card, 'can_edit': deck_manager.can_edit(request.user)})
 
-# Display a card belonging to deck ---- TODO convert num to id
-def display(request, deck_id, page_num):
-    deck = get_object_or_404(Deck, pk=deck_id)
-    cards = deck.card_set.all().order_by('id')
+# Display a card belonging to deck
+def display(request, deck_id, card_id):
+    deck_manager = DeckManager(deck_id)
 
-    # Convert decks page number to card id
-    def num_to_id(page_num):
-        if 0 < page_num < len(cards) + 1:
-            return cards[page_num - 1].pk
+    if card_id == 0:
+        f_card = deck_manager.get_first_card()
+        if not f_card:
+            return redirect("/")
         else:
-            raise Http404
-
-    card_id = num_to_id(page_num)
-    card = get_object_or_404(Card, pk=card_id)
-
-    # Select card to show
-    next_card = page_num % len(cards) + 1
-    next_card_random = random.choice(cards).pk
-    prev_card = page_num - 1
-    if prev_card <= 0:
-        prev_card = len(cards)
+            return redirect("cards:display", deck_id, f_card.pk)
+    else:
+        active_card = get_object_or_404(Card, pk=card_id)
         
-    context =  {
-        'card': card,
-        'next_card': next_card,
-        'prev_card': prev_card,
-        'next_card_random': next_card_random
+    n_card = deck_manager.get_next_card(active_card)
+    p_card = deck_manager.get_previous_card(active_card)
+    cards_around = deck_manager.get_cards_around(active_card)
+
+    context = {
+        'active_card': active_card,
+        'n_card': n_card,
+        'p_card': p_card,
+        'cards_around': cards_around,
+        'deck': deck_manager.deck
     }
     
-    return render(request, context, 'cards/display.html',)
+    return render(request, 'cards/display.html', context)
 
 # Create a new deck
 @login_required
@@ -63,7 +67,7 @@ def create_deck_form(request):
         form = DeckForm(request.POST)
         
         if form.is_valid():
-            return DeckManager.new_deck_from_form(form)
+            return DeckManager.new_deck_from_form(request, form)
 
     form = DeckForm()
     return render(request, 'cards/create_deck_form.html', {'form': form})
@@ -74,6 +78,9 @@ def create_deck_form(request):
 def edit_deck(request, deck_id, card_id):
 
     deck_manager = DeckManager(deck_id)
+
+    if not deck_manager.can_edit(request, user):
+        return redirect('/')
     
     # If card_id is 0 then we need to create new card first
     if card_id == 0:
@@ -82,8 +89,6 @@ def edit_deck(request, deck_id, card_id):
     else:
         card = get_object_or_404(Card, pk=card_id)
     
-    if not request.user.has_perm('can_edit', deck_manager.deck):
-        return redirect('/')
     
     if request.method == 'POST':
         deck_form = DeckEditForm(request.POST)

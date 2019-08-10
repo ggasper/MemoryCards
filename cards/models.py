@@ -20,6 +20,9 @@ class Deck(models.Model):
     def allow_edit(self, user):
         assign_perm('can_edit', user, self)
 
+    def can_edit(self, user):
+        return user.has_perm('can_edit', self)
+        
     def update_from_form(self, form):
         if form.is_valid():
             self.title = form.cleaned_data['title']

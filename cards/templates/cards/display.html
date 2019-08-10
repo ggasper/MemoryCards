@@ -1,5 +1,32 @@
-<h2> {{ card.front }}  </h2>
-<p> {{ card.back }} </p>
-<a href="{% url 'cards:display' card.deck_id  prev_card %}">previous</a>
-<a href="{% url 'cards:display' card.deck_id  next_card_random %}">random</a>
-<a href="{% url 'cards:display' card.deck_id  next_card %}">next</a>
+{% extends "base.html" %}
+{% block title %} View {{ deck.title }} {% endblock %}
+
+{% block content %}
+
+<div class="card bg-light mt-3 mb-3">
+  <div class="card-header">
+    <h3> {{ active_card.front }} </h3>
+  </div>
+  <div class="card-body">
+    <p class="card-text"> {{ active_card.back }} </p>
+  </div>
+</div>
+
+<ul class="pagination">
+  <li class="page-item {% if not p_card %} disabled {% endif %}">
+      <a class="page-link" {% if p_card %} href="{% url 'cards:display' deck.pk p_card.pk %} {% else %} tabindex="-1" {% endif %}">
+        <span>&laquo;</span>
+      </a>
+  </li>
+  
+  {% for page, card in cards_around %}
+  <li class="page-item {% if card.pk == active_card.pk %} active {% endif %}  "><a class="page-link" href="{% url 'cards:display' deck.pk card.pk %}"> {{ page }}</a></li>
+  {% endfor %}
+  
+  <li class="page-item {% if n_card.pk == 0 %} disabled {% endif %}">
+      <a class="page-link" {% if not n_card.pk == 0 %} href="{% url 'cards:display' deck.pk n_card.pk %} {% else %} tabindex="-1" {% endif %}">
+        <span>&raquo;</span>
+      </a>
+  </li>
+</ul>
+{% endblock %}
