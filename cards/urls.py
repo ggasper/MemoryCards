@@ -1,12 +1,15 @@
 from django.urls import path
+from django.http import HttpResponseRedirect
 
 from . import views
 
 app_name = 'cards'
 
 urlpatterns = [
-    path('', views.decks, name='decks'),
-    path('my_decks', views.my_decks, name='my_decks'),
+    path('', lambda r: HttpResponseRedirect('1')),
+    path('<int:page_num>', views.decks, name='decks'),
+    path('my_decks', lambda r: HttpResponseRedirect('my_decks/1')),
+    path('my_decks/<int:page_num>', views.my_decks, name='my_decks'),
     path('<int:deck_id>/', views.detail, name='detail'),
     path('<int:deck_id>/card/<int:card_id>/', views.display, name='display'),
     path('create', views.create_deck_form, name='create'),

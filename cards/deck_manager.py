@@ -22,6 +22,23 @@ class DeckManager:
 
         return redirect('cards:edit', card_id=card.pk, deck_id=deck.pk)
 
+    @staticmethod
+    def get_decks(page_num, author = None, per_page = 40):
+        if not author:
+            deck_list = Deck.objects.order_by('-pub_date')
+        else:
+            deck_list = Deck.objects.filter(author=author).order_by('pub_date')
+
+        start = (page_num - 1) * per_page
+        decks = []
+        for i in range(start, start + per_page):
+            if i >= len(deck_list):
+                break
+            decks.append(deck_list[i])
+        first_page = max(1, page_num - 5)
+        last_page = min(first_page + 11, (len(deck_list) + (per_page - len(deck_list)) % per_page) // per_page)
+        return (decks, first_page, last_page)
+
     def can_edit(self, user):
         return self.deck.can_edit(user)
     

@@ -14,16 +14,16 @@ import random
 # Create your views here.
 
 # list all deck by publication date
-def decks(request):
-    deck_list = Deck.objects.order_by('-pub_date')
-    context = {'deck_list': deck_list}
+def decks(request, page_num):
+    deck_list, start_page, end_page = DeckManager.get_decks(page_num)
+    context = {'deck_list': deck_list, 'page': page_num, 'pages': range(start_page, end_page + 1), 'last_page': end_page}
     return render(request, 'cards/decks.html', context)
 
 # List all deck made by user
 @login_required
-def my_decks(request):
-    deck_list = Deck.objects.filter(author=request.user).order_by('-pub_date')
-    context = {'deck_list': deck_list}
+def my_decks(request, page_num):
+    deck_list, start_page, end_page = DeckManager.get_decks(page_num, author=request.user)
+    context = {'deck_list': deck_list, 'page': page_num, 'pages': range(start_page, end_page + 1), 'last_page': end_page}
     return render(request, 'cards/decks.html', context)
 
 
@@ -79,7 +79,7 @@ def edit_deck(request, deck_id, card_id):
 
     deck_manager = DeckManager(deck_id)
 
-    if not deck_manager.can_edit(request, user):
+    if not deck_manager.can_edit(request.user):
         return redirect('/')
     
     # If card_id is 0 then we need to create new card first

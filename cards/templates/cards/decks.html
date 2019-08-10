@@ -7,7 +7,7 @@
 
 {% block content %}
 {% if deck_list %}
-<ul class="card-group">
+<ul class="card-group pl-0">
   {% for deck in deck_list %}
   <div class="col-sm-3">
     <li class="card mt-3 bg-light">
@@ -25,7 +25,28 @@
   </div>
   {% endfor %}
 </ul>
+
+<ul class="pagination justify-content-center">
+  <li class="page-item {% if page == 1 %} disabled {% endif %}">
+    <a class="page-link" {% if page > 1 %} href="{% url 'cards:decks' page|add:-1 %}" {% else %} tabindex="-1" {% endif %}>
+      <span>&laquo;</span>
+    </a>
+  </li>
+  
+  {% for cur_page in pages %}
+  <li class="page-item {% if page == cur_page %} active {% endif %}">
+    <a class="page-link" href="{% url 'cards:decks' cur_page %}">{{ cur_page }}</a>
+  </li>
+  {% endfor %}
+
+  <li class="page-item {% if page == last_page %} disabled {% endif %}">
+    <a class="page-link" {% if page == last_page %} tabindex="-1" {% else %} href="{% url 'cards:decks' page|add:1 %}" {% endif %}>
+      <span>&raquo;</span>
+    </a>
+  </li>
+</ul>
 {% else %}
 <p> No decks have been added </p>
+<a class="btn btn-outline-primary" href="/cards/create">Create deck</a>
 {% endif %}
 {% endblock %}
