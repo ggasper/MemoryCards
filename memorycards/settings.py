@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'cards.apps.CardsConfig',
+    'django.contrib.postgres',
     'accounts.apps.AccountsConfig',
     'guardian',
     'crispy_forms',

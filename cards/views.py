@@ -15,15 +15,32 @@ import random
 
 # list all deck by publication date
 def decks(request, page_num):
-    deck_list, start_page, end_page = DeckManager.get_decks(page_num)
+    if request.method == 'GET' and 'query' in request.GET:
+        query = str(request.GET['query'])
+    else:
+        query = None
+    if query:
+        deck_list, start_page, end_page = DeckManager.get_decks(page_num, query=query)
+    else:
+        deck_list, start_page, end_page = DeckManager.get_decks(page_num)
+
     context = {'deck_list': deck_list, 'page': page_num, 'pages': range(start_page, end_page + 1), 'last_page': end_page}
     return render(request, 'cards/decks.html', context)
 
 # List all deck made by user
 @login_required
 def my_decks(request, page_num):
-    deck_list, start_page, end_page = DeckManager.get_decks(page_num, author=request.user)
-    context = {'deck_list': deck_list, 'page': page_num, 'pages': range(start_page, end_page + 1), 'last_page': end_page}
+    if request.method == 'GET' and 'query' in request.GET:
+        query = str(request.GET['query'])
+    else:
+        query = None
+        
+    if query:
+        deck_list, start_page, end_page = DeckManager.get_decks(page_num, author=request.user, query=query)
+    else:
+        deck_list, start_page, end_page = DeckManager.get_decks(page_num, author=request.user)
+
+    context = {'deck_list': deck_list, 'page': page_num, 'pages': range(start_page, end_page + 1), 'last_page': end_page, 'search_redirect': '/cards/my_decks/1'}
     return render(request, 'cards/decks.html', context)
 
 

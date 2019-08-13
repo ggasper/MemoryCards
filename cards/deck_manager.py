@@ -1,7 +1,7 @@
 from .models import Deck, Card
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
-
+from django.contrib.postgres.search import SearchVector, SearchRank, SearchQuery
 
 class DeckManager:
     @staticmethod
@@ -23,12 +23,23 @@ class DeckManager:
         return redirect('cards:edit', card_id=card.pk, deck_id=deck.pk)
 
     @staticmethod
-    def get_decks(page_num, author = None, per_page = 40):
+    def get_decks(page_num, author=None, per_page=40, query=None):
+        # If there is an author only return his own decks
         if not author:
-            deck_list = Deck.objects.order_by('-pub_date')
+            deck_query = Deck.objects.order_by('-pub_date')
         else:
-            deck_list = Deck.objects.filter(author=author).order_by('pub_date')
+            deck_query = Deck.objects.filter(author=author).order_by('pub_date')
+        
+        # If there is a query process it
+        if query:
+            vector = SearchVector('title', weight='A') + SearchVector('description', weight='B')
+            search_query = SearchQuery(query)
+            deck_list = deck_query.annotate(rank=SearchRank(vector, search_query)).filter(rank__gte=0.3).order_by('-rank')
+        else:
+            deck_list = deck_query.all()
 
+        
+            
         start = (page_num - 1) * per_page
         decks = []
         for i in range(start, start + per_page):
