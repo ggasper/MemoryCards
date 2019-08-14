@@ -1,18 +1,19 @@
 # MemoryCards
-MemoryCards is a website which helps with learning using one of the spaced repetition algorithms. 
-It allows its users to create decks of cards which they can then review. The website itself chooses which cards the user needs to review,
-to improve retention.
+MemoryCards is a website that aids in memorization with the help of flashcards. The website allows the creation and sharing of decks of cards, 
+while also controlling how often users need to review certain cards in a specific deck to improve retention.
 
-## The website supports:
+## The website supports
 1. User created decks of cards to memorize
-2. Viewing other peoples decks
+2. Sharing decks
+3. Saving your favourite decks for simpler access
 3. Reviewing cards based on the [SM2](https://www.supermemo.com/en/archives1990-2015/english/ol/sm2) algorithm
+4. MathJax
 
 ## Install
 1. Clone this repository: https://github.com/ggasper/MemoryCards.git
 2. Navigate into the `memorycards` directory
-3. Create a new virtual environment using the `requirements.txt`.
-   This is done with the command `pip install -r reqirements.txt`.
+3. Install the python packages using `requirements.txt`.
+   This is done with the command `pip install -r reqirements.txt`. It's also recommended that you install the packages inside a virtual environment like `venv`.
 4. Setup the PostgreSQL database:
    * Install PostgreSQL as specified for your system. 
    * Run the following SQL commands to setup the server database:
