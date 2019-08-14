@@ -2,14 +2,19 @@
 MemoryCards is a website that aids in memorization with the help of flashcards. The website allows the creation and sharing of decks of cards, 
 while also controlling how often users need to review certain cards in a specific deck to improve retention.
 
-## The website supports
+## Features
 1. User created decks of cards to memorize
 2. Sharing decks
 3. Saving your favourite decks for simpler access
 3. Reviewing cards based on the [SM2](https://www.supermemo.com/en/archives1990-2015/english/ol/sm2) algorithm
 4. MathJax
 
-## Install
+## Installation & Prerequisites
+### Prerequisites
+1. Python 3 (either by itself or in a virtual environment)
+2. PostgreSQL
+
+### Install
 1. Clone this repository: https://github.com/ggasper/MemoryCards.git
 2. Navigate into the `memorycards` directory
 3. Install the python packages using `requirements.txt`.
