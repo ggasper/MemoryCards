@@ -3,6 +3,7 @@ from django.views.generic import ListView
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from .models import Card, Deck, SM2_data
 from .forms import DeckForm, DeckEditForm, CardEditForm, RetentionForm
@@ -24,7 +25,7 @@ def decks(request, page_num):
     else:
         deck_list, start_page, end_page = DeckManager.get_decks(page_num)
 
-    context = {'deck_list': deck_list, 'page': page_num, 'pages': range(start_page, end_page + 1), 'last_page': end_page}
+    context = {'deck_list': deck_list, 'page': page_num, 'pages': range(start_page, end_page + 1), 'last_page': end_page, 'decks': True}
     return render(request, 'cards/decks.html', context)
 
 # List all deck made by user
@@ -40,15 +41,37 @@ def my_decks(request, page_num):
     else:
         deck_list, start_page, end_page = DeckManager.get_decks(page_num, author=request.user)
 
-    context = {'deck_list': deck_list, 'page': page_num, 'pages': range(start_page, end_page + 1), 'last_page': end_page, 'search_redirect': '/cards/my_decks/1'}
+    context = {'deck_list': deck_list, 'page': page_num, 'pages': range(start_page, end_page + 1), 'last_page': end_page, 'search_redirect': '/cards/my_decks/1', 'my_decks': True}
     return render(request, 'cards/decks.html', context)
 
+# Show decks that you are currently reviewing
+@login_required
+def favourites(request, page_num):
+    if request.method == 'GET' and 'query' in request.GET:
+        query = str(request.GET['query'])
+    else:
+        query = None
+        
+    if query:
+        deck_list, start_page, end_page = DeckManager.get_decks(page_num, query=query, favourites_user=request.user)
+    else:
+        deck_list, start_page, end_page = DeckManager.get_decks(page_num, favourites_user=request.user)
+
+    context = {'deck_list': deck_list, 'page': page_num, 'pages': range(start_page, end_page + 1), 'last_page': end_page, 'search_redirect': '/cards/favourites/1', 'favourites': True}
+    return render(request, 'cards/decks.html', context)
 
 # Display the details of a single deck
 def detail(request, deck_id):
     deck_manager = DeckManager(deck_id)
+
+    # Check if favourites have changed
+    if request.method == 'GET' and 'favourite' in request.GET:
+        deck_manager.deck.change_favourite(request.user)
+        return redirect('cards:detail', deck_id)
+        
     edit_card = deck_manager.get_first_card()
-    return render(request, 'cards/detail.html', {'deck': deck_manager.deck, 'edit_card': edit_card, 'can_edit': deck_manager.can_edit(request.user)})
+    favourite = deck_manager.deck.is_favourited(request.user)
+    return render(request, 'cards/detail.html', {'deck': deck_manager.deck, 'edit_card': edit_card, 'can_edit': deck_manager.can_edit(request.user), 'favourite': favourite})
 
 # Display a card belonging to deck
 def display(request, deck_id, card_id):
@@ -87,7 +110,7 @@ def create_deck_form(request):
             return DeckManager.new_deck_from_form(request, form)
 
     form = DeckForm()
-    return render(request, 'cards/create_deck_form.html', {'form': form})
+    return render(request, 'cards/create_deck_form.html', {'form': form, 'create_deck': True})
 
 
 # Form for editing the deck
@@ -113,6 +136,7 @@ def edit_deck(request, deck_id, card_id):
 
         deck_manager.deck.update_from_form(deck_form)
         card.update_from_form(card_form)
+        messages.success(request, "Saved")
         
     deck_form = DeckEditForm()
     deck_form.init(deck_manager.deck)
@@ -195,3 +219,4 @@ def end_review(request, deck_id):
     deck_manager = DeckManager(deck_id)
     deck = deck_manager.deck
     return render(request, 'cards/end_review.html', {'deck':deck})
+

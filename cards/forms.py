@@ -33,7 +33,7 @@ class RetentionForm(forms.Form):
         (1, 'wrong'),
         (0, 'blank')
     )
-    quality = forms.ChoiceField(choices=OPTIONS, widget=forms.RadioSelect())
+    quality = forms.ChoiceField(choices=OPTIONS, widget=forms.RadioSelect(), label="How well did you remember this card?")
     sm2_data_id = forms.IntegerField(widget=forms.HiddenInput())
 
     def init(self, sm2_data_id):

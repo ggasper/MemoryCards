@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+    <script src="https://kit.fontawesome.com/40cc7bd813.js"></script>
     {% block head %} {% endblock %}
   </head>
   <body>
@@ -16,9 +17,10 @@
     <nav class="navbar sticky-top navbar-expand-lg bg-primary navbar-dark">
       <a class="navbar-brand" href="/cards">MemoryCards</a>
       <ul class="navbar-nav">
-	<li class="nav-item"><a class="nav-link" href="/cards/">Decks</a></li>
-	<li class="nav-item"><a class="nav-link" href="/cards/my_decks">My decks</a></li>
-	<li class="nav-item"><a class="nav-link" href="/cards/create">Create deck</a></li>
+	<li class="nav-item {% if decks %} active {% endif %}"><a class="nav-link" href="/cards/">Decks</a></li>
+	<li class="nav-item {% if favourites %} active {% endif %}"><a class="nav-link" href="/cards/favourites">Favourites</a></li>
+	<li class="nav-item {% if my_decks %} active {% endif %}"><a class="nav-link" href="/cards/my_decks">My decks</a></li>
+	<li class="nav-item {% if create_deck %} active {% endif %}"><a class="nav-link" href="/cards/create">Create deck</a></li>
       </ul>
       <ul class="navbar-nav ml-auto">
 	<form class="form-inline my2 my-lg-0 mr-3" action="{% if search_redirect %} {{ search_redirect }} {% else %} {% url 'cards:decks' 1 %} {% endif %}">
@@ -26,16 +28,17 @@
 	  <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
 	</form>
 	{% if user.is_authenticated %}
-	<li class="nav-item"><a href="/accounts/change" class="nav-link">{{ user.username }}</a></li>
+	<li class="nav-item {% if change_account %} active {% endif %}"><a href="/accounts/change" class="nav-link">{{ user.username }}</a></li>
 	<li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
 	{% else %}
-	<li class="nav-item"><a class="nav-link" href="/accounts/login">Login</a></li>
-	<li class="nav-item"><a class="nav-link" href="/accounts/signup">Signup</a></li>
+	<li class="nav-item"><a class="nav-link {% if login %} active {% endif %}" href="/accounts/login">Login</a></li>
+	<li class="nav-item"><a class="nav-link {% if signup %} active {% endif %}" href="/accounts/signup">Signup</a></li>
 	{% endif %}
       </ul>
     </nav>
 
     <div class="container pt-3">
+      {% include 'messages.html' %}
       {% block content %}{% endblock %}
     </div>
 

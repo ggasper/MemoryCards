@@ -4,7 +4,11 @@
 
 
 {% block content %}
-<h1 class="display-4"> {{ deck.title }} </h1>
+<h1 class="display-5 d-inline"> {{ deck.title }} </h1>
+{% if user.is_authenticated %}
+<a href="?favourite='True'" class="fa-star fa-2x {% if favourite %} fas {% else %} far {% endif %}"  style="text-decoration: none;"></a>
+<br>
+{% endif %}
 <small> Published on: {{ deck.pub_date }} </small>
 <p> {{ deck.description }} </p>
 <form action="/cards/review/{{ deck.pk }}" method="GET">

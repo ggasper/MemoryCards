@@ -11,7 +11,8 @@ class Deck(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.TextField()
     pub_date = models.DateTimeField('date published')
-
+    favourited_by = models.ManyToManyField(User, related_name='favourited_by')
+    
     class Meta:
         permissions = (
             ('can_edit', 'Can edit'),
@@ -30,6 +31,15 @@ class Deck(models.Model):
             self.save()
             return True
         return False
+
+    def is_favourited(self, user):
+        return self.favourited_by.filter(pk=user.pk).exists()
+
+    def change_favourite(self, user):
+        if self.is_favourited(user):
+            self.favourited_by.remove(user)
+        else:
+            self.favourited_by.add(user)
 
 class Card(models.Model):
     deck = models.ForeignKey(Deck, on_delete=models.CASCADE)

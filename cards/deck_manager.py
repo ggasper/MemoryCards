@@ -23,13 +23,16 @@ class DeckManager:
         return redirect('cards:edit', card_id=card.pk, deck_id=deck.pk)
 
     @staticmethod
-    def get_decks(page_num, author=None, per_page=40, query=None):
+    def get_decks(page_num, author=None, favourites_user=None, per_page=40, query=None):
         # If there is an author only return his own decks
-        if not author:
-            deck_query = Deck.objects.order_by('-pub_date')
+        if author:
+            deck_query = Deck.objects.filter(author=author).order_by('-pub_date')
+        # If there is a favourites_user return only his favourites
+        elif favourites_user:
+            deck_query = Deck.objects.filter(favourited_by=favourites_user).order_by('-pub_date')
         else:
-            deck_query = Deck.objects.filter(author=author).order_by('pub_date')
-        
+            deck_query = Deck.objects.order_by('-pub_date')
+            
         # If there is a query process it
         if query:
             vector = SearchVector('title', weight='A') + SearchVector('description', weight='B')
