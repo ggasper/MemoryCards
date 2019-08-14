@@ -29,7 +29,7 @@ to improve retention.
    python manage.py makemigrations
    python manage.py migrate
    ```
-6. Finally start the server.
+6. Finally, start the server.
    ```bash
    python manage.py runserver.py
    ```
